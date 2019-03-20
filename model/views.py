@@ -5,7 +5,7 @@ import datetime
 # 登陆验证
 def login_view(request):
     if request.method == "POST":
-        form = forms.logincheck(request.POST)
+        form = forms.login_form(request.POST)
         if form.is_valid():
             # 表单合法，则会把数据放在表单的cleaned_data中
             cd = form.cleaned_data
@@ -15,7 +15,12 @@ def login_view(request):
                 user_db = models.User.objects.get(sno=username)#连接数据库检查密码正确性
                 if user_db.pwd == password:
                     # 密码正确
-                    return HttpResponse("Sign in successfully")
+                    request.session["sno"]=user_db.sno # 记录用户登陆状态
+                    form = forms.objUpload_form
+                    context = {}
+                    context['form'] = form
+                    context['user'] = user_db
+                    return render_to_response('objUpload.html', context)
                 else:
                     # 密码错误
                     return HttpResponse("password error or user dont exist")
@@ -29,6 +34,7 @@ def login_view(request):
         form=forms.login_form()
         return render_to_response('login_form.html',{'form':form})
 
+# 用户登陆界面
 def objUpload_view(request):
     if request.method=="POST":
         # 获取用户输入后的POST表单
@@ -40,13 +46,12 @@ def objUpload_view(request):
             user_obj=models.UserObject()    # 创建用户-物品对象
             try:
                 # ！其实这里有问题，假如用户随意输入的学号是存在于数据库中的，那提交的用户就会变成那个学号，而不一定是登陆的用户本身
-                # ！所以后期要通过获取登陆用户的状态，自动获取学号信息
-                user_db = models.User.objects.get(sno=form.cleaned_data['sno'])# 从数据库获取用户信息，若输入学号有误（数据库中没有这个学号）则被except处理
+                user_db = models.User.objects.get(sno=request.session['sno']) #request.session通过cookie记录用户状态
                 user_obj.user=user_db
 
                 # 输入物品信息
                 nowtime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-                obj.id = nowtime# 为物品生成一个当前时间的id，作为主键
+                obj.id = nowtime                            # 为物品生成一个当前时间的id，作为主键
                 obj.name = form.cleaned_data['name']
                 input_date = form.cleaned_data['time']
                 obj.time = datetime.date(datetime.datetime.now().year,
