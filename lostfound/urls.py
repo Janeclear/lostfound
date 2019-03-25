@@ -16,15 +16,13 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
+from django.conf import settings
 from model.views import *
-from img.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^login$',login_view),# 登陆界面
-
-    url(r'^save_profile/', save_profile, name='save_profile'),
-    url(r'^index/', index, name='index'), # 图片上传
-
-    url(r'^upload$',objUpload_view) #物品信息上传
-]
+    url(r'^upload$',objUpload_view), # 物品信息上传
+    url(r'^info/(?P<obj_id>\d+)$',info_view), # 信息展示页面：(\d+)接收一个变量，是“物品”的id，视图函数通过识别这个变量去数据库找到对应的物品记录
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)# 显示图片的需要（参考https://blog.csdn.net/c_beautiful/article/details/79755368

@@ -1,8 +1,8 @@
-from django.shortcuts import render_to_response,HttpResponse
+from django.shortcuts import render_to_response, HttpResponse, redirect
 from model import forms,models
 import datetime
 
-# 登陆验证
+# 登陆页面
 def login_view(request):
     if request.method == "POST":
         form = forms.login_form(request.POST)
@@ -16,11 +16,8 @@ def login_view(request):
                 if user_db.pwd == password:
                     # 密码正确
                     request.session["sno"]=user_db.sno # 记录用户登陆状态
-                    form = forms.objUpload_form
-                    context = {}
-                    context['form'] = form
-                    context['user'] = user_db
-                    return render_to_response('objUpload.html', context)
+                    return redirect('/upload') # 登陆成功，跳转到/upload
+                        # redirect 只能通过session传递参数
                 else:
                     # 密码错误
                     return HttpResponse("password error or user dont exist")
@@ -34,7 +31,7 @@ def login_view(request):
         form=forms.login_form()
         return render_to_response('login_form.html',{'form':form})
 
-# 用户登陆界面
+# 信息上传界面
 def objUpload_view(request):
     if request.method=="POST":
         # 获取用户输入后的POST表单
@@ -43,11 +40,8 @@ def objUpload_view(request):
         # 检查表单的合法性
         if form.is_valid():
             obj=models.Object()             # 创建上传的物品的对象
-            user_obj=models.UserObject()    # 创建用户-物品对象
             try:
-                # ！其实这里有问题，假如用户随意输入的学号是存在于数据库中的，那提交的用户就会变成那个学号，而不一定是登陆的用户本身
                 user_db = models.User.objects.get(sno=request.session['sno']) #request.session通过cookie记录用户状态
-                user_obj.user=user_db
 
                 # 输入物品信息
                 nowtime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
@@ -63,15 +57,14 @@ def objUpload_view(request):
                 obj.dscp = form.cleaned_data['dscp']
                 obj.tag = form.cleaned_data['tag']
                 obj.state = 0  # state=0 未审核状态
+                obj.user = user_db
                 if form.cleaned_data['img']:
                     # 如果有图片上传则执行以下部分
                     obj.img = form.cleaned_data['img']
                     obj.img.name = nowtime+".jpg"# 将图片名称修改为物品id
+
                 obj.save()# 上传物品到数据库
 
-                obj_db = models.Object.objects.get(id=nowtime)# 检查是否物品信息是否上传到数据库（通过搜索数据库中，有无id=nowtime的物品，若没有会被except处理
-                user_obj.object=obj_db
-                user_obj.save()# 上传 用户-物品记录
                 return HttpResponse("Upload successfully.")
             except models.User.DoesNotExist:
                 # 用户不存在
@@ -84,7 +77,28 @@ def objUpload_view(request):
             return HttpResponse("Input invalid.")
     else:
         # 处理非POST的情况,返回表单页面，用户输入数据
+        if request.session['sno']:
+            has_login = True
+        else:
+            has_login = False
         form = forms.objUpload_form
         context={}
         context['form']=form
+        context['has_login']=has_login
         return render_to_response('objUpload.html',context)
+
+# 信息显示页面
+def info_view(request,obj_id):
+    try:
+        obj = models.Object.objects.get(id=obj_id) # 从Object表中获得要显示的物品信息
+    except models.Object.DoesNotExist:
+        return HttpResponse("Information dont exist:Object.")
+    context = {}
+    context['obj'] = obj
+    if request.session['sno']:
+        has_login = True
+        context['user'] = obj.user
+    else:
+        has_login = False
+    context['has_login']=has_login
+    return render_to_response('info.html',context) # context包含:物品信息(obj)、信息发布用户信息(user)、访客是否登陆标记(has_login)

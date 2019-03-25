@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
+import os
+
 from django.db import models
+from lostfound.settings import STATIC_ROOT
 
 #数据库更新命令：
 #！！每次对下面的数据库类进行修改后，就需要执行以下的两条指令对数据库进行更新
@@ -21,19 +24,23 @@ class Object(models.Model):
     time = models.DateField()                               #捡到/丢失日期
     position = models.CharField(max_length=100)             #捡到/丢失地点
     dscp = models.CharField(max_length=200)                 #描述
-    img  = models.ImageField(upload_to="img/object")        #图片
+    img  = models.ImageField(upload_to="img/object",
+                             default="default_img.jpg")     #图片
     tag = models.BooleanField(default=False)                #标识：tag=false lost 失物；tag=true found 拾物
     state = models.IntegerField()                           # state=0:未审核；state=-1:审核不通过
                                                             # state=1 已审核，未被领取/捡到；state=2:已审核，被领取/捡到
-
-class UserObject(models.Model):
-    object = models.ForeignKey(Object,
-                               on_delete=models.CASCADE,)   #物品-外键
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,)     #用户-外键
-    time = models.DateTimeField(auto_now=True)              #信息提交时间
-    class Meta:
-        unique_together=("object","user")                   #物品和用户联合——主键
+
+
+# class UserObject(models.Model):
+#     object = models.ForeignKey(Object,
+#                                on_delete=models.CASCADE,)   #物品-外键
+#     user = models.ForeignKey(User,
+#                              on_delete=models.CASCADE,)     #用户-外键
+#     time = models.DateTimeField(auto_now=True)              #信息提交时间
+#     class Meta:
+#         unique_together=("object","user")                   #物品和用户联合——主键
 
 class AllSort(models.Model):
     id = models.AutoField(primary_key=True)                 #类别编号-主键(自增)

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>信息显示</title>
+</head>
+<br>
+    <p>物品名称：{{ obj.name }}</p>
+    <p>丢失/捡到时间：{{ obj.time }}</p>
+    <p>丢失/捡到地点：{{ obj.position }}</p>
+    <p>细节描述：{{ obj.dscp }}</p>
+    <p>图片：</p>
+    <img src="{{ obj.img.url }}"><br/>{# 图片要能按一定比例显示在一个区域内 #}
+    <p>-----------------------------------</p>
+    {% if has_login %}
+        {# 若用户已登陆,则可以查看发布者的信息 #}
+        <p>发布者信息：</p>
+        <p>姓名：{{ user.name }}</p>
+        <p>学号：{{ user.sno }}</p>
+        <p>手机：{{ user.phone }}</p>
+        <p>Email：{{ user.email }}</p>
+    {% endif %}
+    {% block footer %}{% endblock %}
+</body>
+</html>

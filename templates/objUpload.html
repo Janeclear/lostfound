@@ -6,9 +6,8 @@
 </head>
 <body>
     <form enctype="multipart/form-data" action="upload" method="POST">
-    {% if user %}
+    {% if has_login %}
         {# 若用户已登陆 #}
-        <p>欢迎你，{{ user.name }}({{ user.sno }})</p>
         {% if form.errors %}
             {# 出错处理 #}
             <p style="color: red;">
@@ -24,6 +23,7 @@
             <button type="submit" value="Login">上传</button>
         {% endif %}
     {% else %}
+        {# 未登陆 #}
         出错：当前未登陆。点此登陆<br>
     {% endif %}
     </form>
