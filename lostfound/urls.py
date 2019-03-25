@@ -15,16 +15,19 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path
+#from django.urls import path
 from model.views import *
 from img.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    url('admin/', admin.site.urls),
     url(r'^login$',login_view),# 登陆界面
 
     url(r'^save_profile/', save_profile, name='save_profile'),
     url(r'^index/', index, name='index'), # 图片上传
 
-    url(r'^upload$',objUpload_view) #物品信息上传
+    url(r'^upload$',objUpload_view), #物品信息上传
+    #物品id 20190325102706934929
+    url(r'^object/(?P<object_id>[0-9]{20})$',objShowinfo_view),
+    #通过(?P<name>pattern) 可以向view传递参数,参数名为name
 ]

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>物品信息显示</title>
+</head>
+<body>
+    {% if state %}
+        {# 该信息已审核,测试用例状态均为0,要想显示就改成not state #}
+        {% if tag %}
+        {# 该物品为拾到物品 #}
+            <h4>拾到物品:{{ name }}</h4>
+            <ul>
+                <li>拾获时间:{{time}}</li>
+                <li>拾获地点:{{position}}</li>
+                <li>物品图片:------------------暂未实现</li>
+            </ul>
+            <p>详细描述:{{dscp}}</p>
+        {% else %}
+        {# 该物品为丢失物品 #}
+            <h4>丢失物品:{{ name }}</h4>
+            <ul>
+                <li>丢失时间:{{time}}</li>
+                <li>丢失地点:{{position}}</li>
+                <li>物品图片:------------------暂未实现</li>
+            </ul>
+            <p>详细描述:{{dscp}}</p>
+        <ul>
+            <li>信息发布者姓名:{{username}}</li>
+            <li>联系电话:{{phone}}</li>
+            <li>电子邮箱:{{email}}</li>
+        </ul>
+        {% endif %}
+    {% else %}
+        当前物品暂未通过审核<br>
+    {% endif %}
+</body>
+</html>

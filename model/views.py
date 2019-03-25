@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response,HttpResponse
+from django.http import HttpResponseRedirect
 from model import forms,models
 import datetime
 
@@ -20,7 +21,12 @@ def login_view(request):
                     context = {}
                     context['form'] = form
                     context['user'] = user_db
+
+                    #obj=redirect("upload")
+                    #obj.set_cookie('cookie1',context)
+                    #return HttpResponseRedirect("/upload",context) 
                     return render_to_response('objUpload.html', context)
+                    
                 else:
                     # 密码错误
                     return HttpResponse("password error or user dont exist")
@@ -88,3 +94,29 @@ def objUpload_view(request):
         context={}
         context['form']=form
         return render_to_response('objUpload.html',context)
+
+#物品详细信息显示
+def objShowinfo_view(request,object_id):
+    obj_db = models.Object.objects.filter(id=object_id)
+    #使用get如果味查询到会抛出异常，filter会返回空的[]
+    if(len(obj_db)==0):
+        return HttpResponse("this page does not exist!")
+    obj = obj_db[0]
+    #列表中的第一个对象
+    userobj_db = models.UserObject.objects.get(object=obj.id)
+    user_db = models.User.objects.get(sno=userobj_db.user.sno)
+    #user在UserObject中定义为外键,userobj_db.user返回的是User对象
+    context={}
+    context['sno']=user_db.sno
+    context['username']=user_db.name
+    context['phone']=user_db.phone
+    context['email']=user_db.email
+    context['id']=obj.id
+    context['name']=obj.name
+    context['time']=obj.time
+    context['position']=obj.position
+    context['dscp']=obj.dscp
+    context['state']=obj.state
+    #contexet为一个字典
+    return render_to_response("objShowinfo.html",context)
+
