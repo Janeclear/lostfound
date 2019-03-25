@@ -28,6 +28,7 @@ urlpatterns = [
 
     url(r'^upload$',objUpload_view), #物品信息上传
     #物品id 20190325102706934929
-    url(r'^object/(?P<object_id>[0-9]{20})$',objShowinfo_view),
+    url(r'^object/(?P<object_id>[0-9]{20})$',objShowinfo_view,name='object'),
     #通过(?P<name>pattern) 可以向view传递参数,参数名为name
+    url(r'^object$',objList_view),
 ]

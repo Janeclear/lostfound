@@ -120,3 +120,13 @@ def objShowinfo_view(request,object_id):
     #contexet为一个字典
     return render_to_response("objShowinfo.html",context)
 
+#物品列表显示
+def objList_view(request):
+    #审核通过的物品,按提交时间(id)降序
+    obj_db = models.Object.objects.filter(state=1).order_by('-id')
+    if len(obj_db)==0:
+        return HttpResponse('no valid information of objects')
+    context={'context':obj_db}
+
+    return render_to_response("objList.html",context)
+
