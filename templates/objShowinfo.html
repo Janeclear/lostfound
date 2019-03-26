@@ -5,9 +5,9 @@
     <title>物品信息显示</title>
 </head>
 <body>
-    {% if state %}
+    {% if obj.state %}
         {# 该信息已审核,测试用例状态均为0,要想显示就改成not state #}
-        {% if tag %}
+        {% if obj.tag %}
         {# 该物品为拾到物品 #}
             <h4>拾到物品:{{ obj.name }}</h4>
             <ul>
