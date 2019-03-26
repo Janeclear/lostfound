@@ -1,9 +1,8 @@
-from django.shortcuts import render_to_response,HttpResponse
-from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response,HttpResponse,redirect
 from model import forms,models
 import datetime
 
-# 登陆验证
+# 登陆页面
 def login_view(request):
     if request.method == "POST":
         form = forms.login_form(request.POST)
@@ -17,16 +16,8 @@ def login_view(request):
                 if user_db.pwd == password:
                     # 密码正确
                     request.session["sno"]=user_db.sno # 记录用户登陆状态
-                    form = forms.objUpload_form
-                    context = {}
-                    context['form'] = form
-                    context['user'] = user_db
-
-                    #obj=redirect("upload")
-                    #obj.set_cookie('cookie1',context)
-                    #return HttpResponseRedirect("/upload",context) 
-                    return render_to_response('objUpload.html', context)
-                    
+                    return redirect('/upload') # 登陆成功，跳转到/upload
+                        # redirect 只能通过session传递参数
                 else:
                     # 密码错误
                     return HttpResponse("password error or user dont exist")
@@ -107,16 +98,8 @@ def objShowinfo_view(request,object_id):
     user_db = models.User.objects.get(sno=userobj_db.user.sno)
     #user在UserObject中定义为外键,userobj_db.user返回的是User对象
     context={}
-    context['sno']=user_db.sno
-    context['username']=user_db.name
-    context['phone']=user_db.phone
-    context['email']=user_db.email
-    context['id']=obj.id
-    context['name']=obj.name
-    context['time']=obj.time
-    context['position']=obj.position
-    context['dscp']=obj.dscp
-    context['state']=obj.state
+    context['user']=user_db
+    context['obj']=obj
     #contexet为一个字典
     return render_to_response("objShowinfo.html",context)
 
