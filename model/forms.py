@@ -4,7 +4,7 @@ class login_form(forms.Form):
     #login_form.html
     username = forms.CharField(max_length=10,label="学号")
     password = forms.CharField(max_length=20,widget=forms.PasswordInput,label="密码")
-    # 这里的变量名需要同html表单中的保持一致，否则无法读入信息
+    # 这里的变量名需要同html表单中的name保持一致，否则无法读入信息
 
 class objUpload_form(forms.Form):
     # objUpload.html
