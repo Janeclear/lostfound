@@ -5,10 +5,10 @@
     <title>物品信息显示</title>
 </head>
 <body>
-    {% if obj.state %}
-        {# 该信息已审核,测试用例状态均为0,要想显示就改成not state #}
+    {% if show_obj %}
+        {# 允许显示物品 #}
         {% if obj.tag %}
-        {# 该物品为拾到物品 #}
+            {# 该物品为拾到物品 #}
             <h4>拾到物品:{{ obj.name }}</h4>
             <ul>
                 <li>拾获时间:{{obj.time}}</li>
@@ -16,9 +16,8 @@
             </ul>
             <img src="{{ obj.img.url }}"><br/>{# 图片要能按一定比例显示在一个区域内 #}
             <p>详细描述:{{obj.dscp}}</p>
-
         {% else %}
-        {# 该物品为丢失物品 #}
+            {# 该物品为丢失物品 #}
             <h4>丢失物品:{{ obj.name }}</h4>
             <ul>
                 <li>丢失时间:{{obj.time}}</li>
@@ -26,15 +25,19 @@
             </ul>
             <img src="{{ obj.img.url }}"><br/>{# 图片要能按一定比例显示在一个区域内 #}
             <p>详细描述:{{obj.dscp}}</p>
-            <p>--------------------------------------------</p>
+        {% endif %}
+    {% endif %}
+
+    {% if show_user %}
+        {# 允许用户信息显示 #}
+        <p>--------------------------------------------</p>
         <ul>
             <li>信息发布者姓名:{{user.name}}</li>
             <li>联系电话:{{user.phone}}</li>
             <li>电子邮箱:{{user.email}}</li>
         </ul>
-        {% endif %}
-    {% else %}
-        当前物品暂未通过审核<br>
     {% endif %}
+
+
 </body>
 </html>

@@ -99,6 +99,10 @@ def objUpload_view(request):
 
 #物品详细信息显示
 def objShowinfo_view(request,object_id):
+    # 1.获得【物品】和发布该信息的【用户】
+    # 2.根据【登陆情况】【物品是否审核】及【登陆用户的权限】三者来决定信息的显示规则
+
+    # step1
     obj_db = models.Object.objects.filter(id=object_id)
     #使用get如果味查询到会抛出异常，filter会返回空的[]
     if(len(obj_db)==0):
@@ -112,6 +116,34 @@ def objShowinfo_view(request,object_id):
     context['user']=user_db
     context['obj']=obj
     #contexet为一个字典
+
+    # step2
+    show_obj=False  # 物品信息显示标记 初始False
+    show_user=False # 用户信息显示标记 初始False
+    if 'sno' in request.session:
+        # 已登录
+        user_login = models.User.objects.get(sno=request.session['sno']) # 获得已登录用户信息
+        if user_login.tag:
+            # tag==True 管理员
+            # 显示所有
+            show_obj=True
+            show_user=True
+        else:
+            # tag==False 普通用户
+            if obj.state>0:
+                # 通过审核
+                # 显示所有
+                show_obj = True
+                show_user = True
+            # else:
+            # 未通过审核，都为False
+    else:
+        # 未登陆
+        # 仅显示物品信息
+        show_obj=True
+
+    context['show_obj']  = show_obj
+    context['show_user'] = show_user
     return render_to_response("objShowinfo.html",context)
 
 #物品列表显示

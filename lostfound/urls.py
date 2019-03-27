@@ -28,7 +28,7 @@ urlpatterns = [
     #通过(?P<name>pattern) 可以向view传递参数,参数名为name
     url(r'^object$',objList_view), # 二级界面
     url(r'^profile$',profile_view), # 个人中心-用户
-    url(r'^quit$',quit_view) # 退出按钮
+    url(r'^quit$',quit_view), # 退出按钮
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # "+static"是显示图片的需要（参考https://blog.csdn.net/c_beautiful/article/details/79755368
