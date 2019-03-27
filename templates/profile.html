@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>用户个人中心</title>
+</head>
+<body>
+    {% if user %}
+        {# 用户已登陆，显示个人信息和历史纪录 #}
+        <h4>个人信息</h4>
+        <ul>
+            <li>姓名：{{ user.name }}</li>
+            <li>学号：{{ user.sno }}</li>
+            <li>电话：{{ user.phone }}</li>
+            <li>邮箱：{{ user.email }}</li>
+        </ul>
+
+        <p>--------------------------------------------</p>
+
+        <h4>历史纪录</h4>
+        {% if no_history %}
+            {# 用户没有历史记录 #}
+            <p>您还没有发布过任何信息。</p>
+        {% else %}
+            <ul>
+            {% for obj in objs %}
+                {# 超链接 object/20位长度id #}
+                <li><a href={% url 'object' obj.id %}>
+                {% if obj.tag %}
+                    招领信息:{{obj.name}}{{obj.id}}
+                {% else %}
+                    失物信息:{{obj.name}}{{obj.id}}
+                {% endif %}
+                </a></li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <a href="/quit">退出</a>
+    {% else %}
+        {# 没有用户登陆-提示登陆 #}
+        出错：当前未登陆。<a href="/login">点此登陆</a>
+    {% endif %}
+
+</body>
+</html>

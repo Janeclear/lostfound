@@ -9,22 +9,17 @@
     {% if user %}
         {# 若用户已登陆 #}
         <p>欢迎你，{{ user.name }}({{ user.sno }})</p>
-        {% if form.errors %}
-            {# 出错处理 #}
-            <p style="color: red;">
-                Please correct the error{{ form.errors|pluralize }} below.
-            </p>
-        {% else %}
-            {% for field in form %}
-                {{ field.label }}
-                {{ field }}
-                <br>
-            {% endfor %}
+        {% for field in form %}
+            {{ field.label }}
+            {{ field }}
             <br>
-            <button type="submit" value="Login">上传</button>
-        {% endif %}
+        {% endfor %}
+        <br>
+        <button type="submit" value="Login">上传</button>
+        <br><br>
+        <a href="/quit">退出</a>
     {% else %}
-        出错：当前未登陆。点此登陆<br>
+        出错：当前未登陆。<a href="/login">点此登陆</a>
     {% endif %}
     </form>
 </body>

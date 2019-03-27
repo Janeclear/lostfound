@@ -15,8 +15,8 @@ def login_view(request):
                 user_db = models.User.objects.get(sno=username)#连接数据库检查密码正确性
                 if user_db.pwd == password:
                     # 密码正确
-                    request.session["sno"]=user_db.sno # 记录用户登陆状态
-                    return redirect('/upload') # 登陆成功，跳转到/upload
+                    request.session["sno"]=user_db.sno # 记录用户sno
+                    return render_to_response('index.html') # 登陆成功
                         # redirect 只能通过session传递参数
                 else:
                     # 密码错误
@@ -28,10 +28,15 @@ def login_view(request):
             # 表单不合法
             return HttpResponse("form invalid")
     else:
-        form=forms.login_form()
-        return render_to_response('login_form.html',{'form':form})
+        # 检查是否已经登陆
+        if 'sno' in request.session:
+            # sno在session中表面已经登陆
+            return render_to_response('index.html')
+        else:
+            form=forms.login_form()
+            return render_to_response('login_form.html',{'form':form})
 
-# 用户登陆界面
+# 信息上传页面
 def objUpload_view(request):
     if request.method=="POST":
         # 获取用户输入后的POST表单
@@ -81,8 +86,14 @@ def objUpload_view(request):
             return HttpResponse("Input invalid.")
     else:
         # 处理非POST的情况,返回表单页面，用户输入数据
+        context = {}
+        try:
+            sno_login = request.session["sno"]
+        except KeyError:
+            return render_to_response('objUpload.html', context)
+        # 已经登陆
+        context['user']=models.User.objects.get(sno=sno_login)
         form = forms.objUpload_form
-        context={}
         context['form']=form
         return render_to_response('objUpload.html',context)
 
@@ -113,3 +124,39 @@ def objList_view(request):
 
     return render_to_response("objList.html",context)
 
+# 个人中心-用户
+def profile_view(request):
+    # 1.通过request.session获得登陆用户
+    # 2.显示用户得个人信息
+    # 3.利用"二级页面"的逻辑，显示用户发表过的信息记录
+    context = {}  # form字典
+    try:
+        sno_login = request.session["sno"]
+    except KeyError:
+        # 未登录的情况下，使用session会报错：KeyError
+        return render_to_response("profile.html", context)
+    # 已登录
+    try:
+        # step1
+        user_login = models.User.objects.get(sno=sno_login)
+        context["user"] = user_login  # 将'用户'加入字典中
+        # step2
+        userobject_db = models.UserObject.objects.filter(user=user_login)
+        objs = []
+        for item in userobject_db:
+            objs.append(item.object) # 将所有用户的物品记录放到objs中
+        if len(objs) == 0:
+            context["no_history"] = True
+        else:
+            context["objs"] = objs  # 将'记录'加入字典字典
+    except models.User.DoesNotExist:
+            # 数据库没有该用户
+        return HttpResponse("The user (id="+request.session["sno"]+") doesn't exist in database.")
+    return render_to_response("profile.html", context)
+
+# 退出按钮
+def quit_view(request):
+    # 1.清除用户登陆，包括cookie
+    # 2.退出后，跳转到主界面（现在先跳转到登陆界面
+    request.session.flush()
+    return redirect("/login")
