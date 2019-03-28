@@ -307,7 +307,44 @@ def quit_view(request):
     # 1.清除用户登陆，包括cookie
     # 2.退出后，跳转到主界面（现在先跳转到登陆界面
     request.session.flush()
-    return redirect("/login2")
+    return redirect("/main")
 
+# 主界面
 def main_view(request):
-    return render_to_response("index.html")
+    context={}
+    if 'sno' in request.session:
+        # 用户已登陆
+        context['sno']=request.session['sno']
+    return render_to_response("index.html",context)
+
+# 分类显示
+def sort_view(request,sort_id):
+    # 1.根据传递的url sort/(sort_id：一位！字符！),选出所有的物品
+    # 2.把通过审核的物品加入显示list
+
+    # step1
+    context={}
+    try:
+        # 注意返回的sort_id 是个字符，不是数字
+        # print(sort_id.__class__)
+        if (sort_id=='0'):  # 总览：显示所有分类的object
+            sortobj_db = models.SortObject.objects.all()
+        else:  # 选出特点类型的物品
+            sort_for_search = models.AllSort.objects.get(id=sort_id)
+            sortobj_db = models.SortObject.objects.filter(sort=sort_for_search)
+    except models.SortObject.DoesNotExist:
+        return HttpResponse("models DoesNotExist ERROR")
+    except models.AllSort.DoesNotExist:
+        return HttpResponse("models DoesNotExist ERROR")
+
+    objs = []
+    for item in sortobj_db:
+        # step2
+        if item.object.state>0: # 筛选通过审核的
+            objs.append(item.object) # 将所有用户的物品记录放到objs中
+    if len(objs) == 0:
+        context["no_history"] = True
+    else:
+        context["context"] = objs  # 将'记录'加入字典字典
+
+    return render_to_response('objList.html',context)

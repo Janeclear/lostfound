@@ -14,7 +14,11 @@
                 <li>拾获时间:{{obj.time}}</li>
                 <li>拾获地点:{{obj.position}}</li>
             </ul>
-            <img src="{{ obj.img.url }}"><br/>{# 图片要能按一定比例显示在一个区域内 #}
+            {% if obj.img %}
+                <img src="{{ obj.img.url }}"><br/>{# 图片要能按一定比例显示在一个区域内 #}
+            {% else %}
+                <p>暂无图片</p>
+            {% endif %}
             <p>详细描述:{{obj.dscp}}</p>
         {% else %}
             {# 该物品为丢失物品 #}
