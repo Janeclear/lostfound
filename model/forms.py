@@ -19,3 +19,13 @@ class objUpload_form(forms.Form):
         initial=1,
         label="类型"
     )
+
+class objUpload2_form(forms.Form):
+    # 为了适配html
+    name = forms.CharField(max_length=10)
+    time = forms.CharField(max_length=20)
+    position = forms.CharField(max_length=100)
+    dscp = forms.CharField(max_length=1000,widget=forms.Textarea)
+    img  = forms.ImageField(required=False)
+    tag = forms.CharField(max_length=20)
+    categary = forms.CharField(max_length=20)
