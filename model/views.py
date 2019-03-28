@@ -157,10 +157,19 @@ def objList_view(request):
     return render_to_response("objList.html",context)
 
 # 个人中心-用户
-def profile_view(request):
+def profile_view(request,nav_id):
     # 1.通过request.session获得登陆用户
     # 2.显示用户得个人信息
     # 3.利用"二级页面"的逻辑，显示用户发表过的信息记录
+#----------------------------------------------------------------
+    #处理删除复选框选中的物品
+    if request.method == "POST":
+        check_box_list = request.POST.getlist("review_object")
+        if len(check_box_list)>0:
+            for obj_id in check_box_list:
+                models.Object.objects.get(id=str(obj_id)).delete()
+
+#----------------------------------------------------------------
     context = {}  # form字典
     try:
         sno_login = request.session["sno"]
@@ -181,6 +190,12 @@ def profile_view(request):
             context["no_history"] = True
         else:
             context["objs"] = objs  # 将'记录'加入字典字典
+#-------------------------------------------------------------------
+        context["nav_id"]=nav_id #导航栏序号
+        # step for review 审核功能
+        obj_review = models.Object.objects.filter(state=0)
+        context["obj_review"]=obj_review
+#-------------------------------------------------------------------
     except models.User.DoesNotExist:
             # 数据库没有该用户
         return HttpResponse("The user (id="+request.session["sno"]+") doesn't exist in database.")

@@ -19,25 +19,43 @@
 
         <p>--------------------------------------------</p>
 
-        <h4>历史纪录</h4>
-        {% if no_history %}
-            {# 用户没有历史记录 #}
-            <p>您还没有发布过任何信息。</p>
-        {% else %}
-            <ul>
-            {% for obj in objs %}
-                {# 超链接 object/20位长度id #}
-                <li><a href={% url 'object' obj.id %}>
-                {% if obj.tag %}
-                    招领信息:{{obj.name}}{{obj.id}}
-                {% else %}
-                    失物信息:{{obj.name}}{{obj.id}}
-                {% endif %}
-                </a></li>
-            {% endfor %}
-            </ul>
+        <h4><a href="{% url 'profile' nav_id=0 %}">历史纪录</h4>
+        {% if user.tag %}
+            {# 用户为管理员才有审核功能 #}
+            <h4><a href="{% url 'profile' nav_id=2 %}">审核信息</h4>
+        {% endif %}
+        {% if nav_id == '0' %}
+            {% if no_history %}
+                {# 用户没有历史记录 #}
+                <p>您还没有发布过任何信息。</p>
+            {% else %}
+                <ul>
+                {% for obj in objs %}
+                    {# 超链接 object/20位长度id #}
+                    <li><a href={% url 'object' obj.id %}>
+                    {% if obj.tag %}
+                        招领信息:{{obj.name}}{{obj.id}}
+                    {% else %}
+                        失物信息:{{obj.name}}{{obj.id}}
+                    {% endif %}
+                    </a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
         {% endif %}
 
+        {% if nav_id == '2' and user.tag %}
+        {# 审核功能 #}
+        <form action="" method="POST">
+            {% for obj in obj_review %}
+            <li><input type="checkbox" name="review_object" value={{obj.id}} /><a href="{% url 'object' obj.id %}">{{obj.id}}{{obj.name}}</li>
+            {# value={{obj.id}}注意和后面的/隔开,不然value的值后面会加上/ #}
+            {% endfor %}
+            <li><input type="submit" value="删除" /></li>
+        </form>
+        {% endif %}
+
+ 
         <a href="/quit">退出</a>
     {% else %}
         {# 没有用户登陆-提示登陆 #}
