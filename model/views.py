@@ -2,6 +2,14 @@ from django.shortcuts import render_to_response,HttpResponse,redirect
 from model import forms,models
 import datetime
 
+# 分类缩写与sort_id的对应关系字典
+sort={'qt':6,
+      'shyp':5,
+      'dzyp':4,
+      'ywpj':3,
+      'sbwj':2,
+      'zjxj':1,}
+
 # 登陆页面
 def login_view(request):
     if request.method == "POST":
@@ -133,6 +141,9 @@ def objUpload_view(request):
 # 信息上传页面——re_lost.html
 def objUpload2_view(request):
     if request.method=="POST":
+        # 1.创建将要上传的'物品'对象(obj)，并将之上传到数据库
+        # 2.更新【物品-用户】表和【分类-物品】表
+
         # 获取用户输入后的POST表单
         form=forms.objUpload2_form(request.POST,request.FILES)# request.FILES是获取imagefield的要求，否则获取不到图片
 
@@ -140,6 +151,7 @@ def objUpload2_view(request):
         if form.is_valid():
             obj=models.Object()             # 创建上传的物品的对象
             user_obj=models.UserObject()    # 创建用户-物品对象
+            sort_obj=models.SortObject()    # 创建分类-物品对象
             try:
                 # ！其实这里有问题，假如用户随意输入的学号是存在于数据库中的，那提交的用户就会变成那个学号，而不一定是登陆的用户本身
                 user_db = models.User.objects.get(sno=request.session['sno']) #request.session通过cookie记录用户状态
@@ -162,14 +174,25 @@ def objUpload2_view(request):
                     obj.img = form.cleaned_data['img']
                     obj.img.name = nowtime+".jpg"# 将图片名称修改为物品id
                 obj.save()# 上传物品到数据库
+                # 根据物品的种类，上传sortobject
 
                 obj_db = models.Object.objects.get(id=nowtime)# 检查是否物品信息是否上传到数据库（通过搜索数据库中，有无id=nowtime的物品，若没有会被except处理
                 user_obj.object=obj_db
                 user_obj.save()# 上传 用户-物品记录
+
+                sort_id = sort[form.cleaned_data['categary']]
+                sort_db = models.AllSort.objects.get(id=sort_id)
+                sort_obj.sort = sort_db
+                sort_obj.object = obj_db
+                sort_obj.save()# 上传 分类-物品记录
+
                 return HttpResponse("Upload successfully.")
             except models.User.DoesNotExist:
                 # 用户不存在
                 return HttpResponse("User dont exist.")
+            except models.AllSort.DoesNotExist:
+                # 分类不存在
+                return HttpResponse("Sort dont exist.")
             except models.Object.DoesNotExist:
                 # 物品信息没有存入数据库
                 return HttpResponse("Upload error.")

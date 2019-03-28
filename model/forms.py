@@ -22,10 +22,10 @@ class objUpload_form(forms.Form):
 
 class objUpload2_form(forms.Form):
     # 为了适配html
-    name = forms.CharField(max_length=10)
-    time = forms.CharField(max_length=20)
-    position = forms.CharField(max_length=100)
-    dscp = forms.CharField(max_length=1000,widget=forms.Textarea)
-    img  = forms.ImageField(required=False)
-    tag = forms.CharField(max_length=20)
-    categary = forms.CharField(max_length=20)
+    name = forms.CharField(max_length=10)       #物品名称
+    time = forms.CharField(max_length=20)       #捡到/丢失时间
+    position = forms.CharField(max_length=100)  #捡到丢失地点
+    dscp = forms.CharField(max_length=1000,widget=forms.Textarea)   #细节描述
+    img  = forms.ImageField(required=False)     #图片
+    tag = forms.CharField(max_length=20)        #tag 表明是失物招领还是寻物启事
+    categary = forms.CharField(max_length=20)   #物品分类
