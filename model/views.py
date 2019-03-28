@@ -16,7 +16,7 @@ def login_view(request):
                 if user_db.pwd == password:
                     # 密码正确
                     request.session["sno"]=user_db.sno # 记录用户sno
-                    return render_to_response('index.html') # 登陆成功
+                    return render_to_response('afterlogin.html') # 登陆成功
                         # redirect 只能通过session传递参数
                 else:
                     # 密码错误
@@ -31,10 +31,43 @@ def login_view(request):
         # 检查是否已经登陆
         if 'sno' in request.session:
             # sno在session中表面已经登陆
-            return render_to_response('index.html')
+            return render_to_response('afterlogin.html')
         else:
             form=forms.login_form()
             return render_to_response('login_form.html',{'form':form})
+
+def login2_view(request):
+    if request.method == "POST":
+        form = forms.login_form(request.POST)
+        if form.is_valid():
+            # 表单合法，则会把数据放在表单的cleaned_data中
+            cd = form.cleaned_data
+            username=cd['username']
+            password=cd['password']
+            try:
+                user_db = models.User.objects.get(sno=username)#连接数据库检查密码正确性
+                if user_db.pwd == password:
+                    # 密码正确
+                    request.session["sno"]=user_db.sno # 记录用户sno
+                    return render_to_response('afterlogin.html') # 登陆成功
+                        # redirect 只能通过session传递参数
+                else:
+                    # 密码错误
+                    return HttpResponse("password error or user dont exist")
+            except models.User.DoesNotExist:
+                # 用户不存在
+                return HttpResponse("password error or user dont exist")
+        else:
+            # 表单不合法
+            return HttpResponse("form invalid")
+    else:
+        # 检查是否已经登陆
+        if 'sno' in request.session:
+            # sno在session中表面已经登陆
+            return render_to_response('afterlogin.html')
+        else:
+            form=forms.login_form()
+            return render_to_response('log_in.html',{'form':form})
 
 # 信息上传页面
 def objUpload_view(request):
@@ -191,4 +224,7 @@ def quit_view(request):
     # 1.清除用户登陆，包括cookie
     # 2.退出后，跳转到主界面（现在先跳转到登陆界面
     request.session.flush()
-    return redirect("/login")
+    return redirect("/login2")
+
+def main_view(request):
+    return render_to_response("index.html")
