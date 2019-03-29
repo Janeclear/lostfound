@@ -56,7 +56,7 @@ class TakenRecord(models.Model):#认领记录（认领是双向的
                               related_name="User2")         #提供失物 / 认领者
     object = models.ForeignKey(Object,
                                on_delete=models.CASCADE,)   #物品
-    time = models.DateTimeField()                           #认领时间
+    time = models.DateTimeField(auto_now_add=True)                           #认领时间
     tag = models.BooleanField(default=False)                #（user2）标识 tag=false lost 丢失的人（认领者）
                                                             # tag=true found 捡到的人
     class Meta:
