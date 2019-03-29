@@ -63,7 +63,13 @@ def objUpload_view(request):
                 # datetime 对象是不可修改的（not writable），实现赋值需要新的date对象
                 obj.position = form.cleaned_data['position']
                 obj.dscp = form.cleaned_data['dscp']
-                obj.tag = form.cleaned_data['tag']
+                tag = form.cleaned_data['tag']
+                if tag == '1':
+                    obj.tag = False  # tag = False 表示丢失
+                elif tag == '2':
+                    obj.tag = True  # tag = true 表示捡拾
+                else:
+                    return HttpResponse("tag error.")
                 obj.state = 0  # state=0 未审核状态
                 if form.cleaned_data['img']:
                     # 如果有图片上传则执行以下部分
