@@ -108,6 +108,20 @@ def objShowinfo_view(request,object_id):
     # 1.获得【物品】和发布该信息的【用户】
     # 2.根据【登陆情况】【物品是否审核】及【登陆用户的权限】三者来决定信息的显示规则
 
+    # 管理员按钮处理
+    if request.method == "POST":
+        command1 = request.POST.getlist("delete")
+        command2 = request.POST.getlist("pass")
+        if len(command1)>0:
+            p=models.Object.objects.get(id=str(object_id))
+            p.state=-1
+            p.save()
+
+        elif len(command2)>0:
+            p=models.Object.objects.get(id=str(object_id))
+            p.state=1
+            p.save()
+
     # step1
     obj_db = models.Object.objects.filter(id=object_id)
     #使用get如果味查询到会抛出异常，filter会返回空的[]
@@ -147,9 +161,11 @@ def objShowinfo_view(request,object_id):
         # 未登陆
         # 仅显示物品信息
         show_obj=True
+        user_login = []
 
     context['show_obj']  = show_obj
     context['show_user'] = show_user
+    context['user_login'] = user_login
     return render_to_response("objShowinfo.html",context)
 
 #物品列表显示
@@ -168,12 +184,41 @@ def profile_view(request,nav_id):
     # 2.显示用户得个人信息
     # 3.利用"二级页面"的逻辑，显示用户发表过的信息记录
 #----------------------------------------------------------------
-    #处理删除复选框选中的物品
+    #处理复选框选中的物品
     if request.method == "POST":
-        check_box_list = request.POST.getlist("review_object")
-        if len(check_box_list)>0:
+        confirm_delete = request.POST.getlist("delete")
+        confirm_finish = request.POST.getlist("finish")
+        #确认按钮(删除、完成)哪一个按下,这里的完成是模态对话框中的完成
+        if len(confirm_delete)>0:
+            check_box_list = request.POST.getlist("object")
             for obj_id in check_box_list:
                 models.Object.objects.get(id=str(obj_id)).delete()
+        elif len(confirm_finish)>0:
+            #修改taken表和object表
+            another_id = request.POST.get("finish_id")
+            check_box_list = request.POST.getlist("object")
+            for obj_id in check_box_list:
+                #更改物品状态
+                p=models.Object.objects.get(id=str(obj_id))
+                p.state=2
+                p.save()
+                #创建Taken表记录
+                try:
+                    takenrecord = models.TakenRecord()
+                    user1 = models.User.objects.get(sno=request.session["sno"])
+                    user2 = models.User.objects.get(sno=another_id)
+                    obj = models.Object.objects.get(id=obj_id)
+                    takenrecord.user1 = user1
+                    takenrecord.user2 = user2
+                    takenrecord.object = obj
+                    if obj.tag:#招领物品
+                        takenrecord.tag = False #用户2来认领
+                    else:
+                        takenrecord.tag = True #用户2提供失物
+                    takenrecord.save()
+                except models.User.DoesNotExist:
+                    return HttpResponse("The user (id="+another_id+") doesn't exist in database.")
+
 
 #----------------------------------------------------------------
     context = {}  # form字典
@@ -189,18 +234,30 @@ def profile_view(request,nav_id):
         context["user"] = user_login  # 将'用户'加入字典中
         # step2
         userobject_db = models.UserObject.objects.filter(user=user_login)
-        objs = []
+        lostobjs = []
+        foundobjs = []
         for item in userobject_db:
-            objs.append(item.object) # 将所有用户的物品记录放到objs中
-        if len(objs) == 0:
-            context["no_history"] = True
+            if item.object.tag==False:
+                lostobjs.append(item.object)
+            elif item.object.tag==True:
+                foundobjs.append(item.object)
+            # 将所有用户的物品记录放到objs中
+        if len(lostobjs) == 0:
+            context["lost_no_history"] = True
         else:
-            context["objs"] = objs  # 将'记录'加入字典字典
+            context["lostobjs"] = lostobjs
+        if len(foundobjs) == 0:
+            context["found_no_history"] = True
+        else:
+            context["foundobjs"] = foundobjs  # 将'记录'加入字典字典
 #-------------------------------------------------------------------
         context["nav_id"]=nav_id #导航栏序号
         # step for review 审核功能
         obj_review = models.Object.objects.filter(state=0)
-        context["obj_review"]=obj_review
+        if len(obj_review)==0:
+            context["review_no_history"] = True
+        else:
+            context["obj_review"]=obj_review
 #-------------------------------------------------------------------
     except models.User.DoesNotExist:
             # 数据库没有该用户
